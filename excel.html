@@ -1,0 +1,69 @@
+HTML FILES
+
+<button (click)="downloadExcel()" class="btn btn-success">
+  <i class="fa fa-file-excel-o" aria-hidden="true"></i> Download Excel
+</button>
+
+
+INSTALL
+npm install xlsx
+
+TS FILE
+
+import * as XLSX from 'xlsx';
+
+outputData(data: any) {
+  this.loading = true;
+  this.studentEnrolementService.filterEnrol(data).subscribe((output: any) => {
+    this.loading = false;
+    this.studentEnrolement = output;
+    this.dataSource = new MatTableDataSource(output);
+    this.dataSource.paginator = this.paginator;
+    this.loading = false;
+  });
+}
+
+downloadExcel() {
+  let myArray = [];
+  for (let i = 0; i < this.dataSource.filteredData.length; i++) {
+    const element = this.dataSource.filteredData[i];
+    myArray.push(element);
+  }
+
+  for (let index = 0; index < myArray.length; index++) {
+    const element = myArray[index];
+  }
+  const excelData = [
+  ['REG NO.', 'FIRST NAME', 'MIDDLE NAME', 'LAST NAME', 'SEX'],
+  ];
+  for (let i = 0; i < myArray.length; i++) {
+    const row = [];
+    row.push(myArray[i].sis_reg_no);
+    row.push(myArray[i].fisrt_name);
+    row.push(myArray[i].middle_name);
+    row.push(myArray[i].last_name);
+    row.push(myArray[i].sex);
+    excelData.push(row);
+  }
+
+  // Create a new Excel workbook
+  const workbook = XLSX.utils.book_new();
+
+  // Convert the data to an Excel sheet
+  const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+
+  // Add the sheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+  // Generate a download URL for the workbook
+  const excelUrl = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+  // Create a link element and click it to download the file
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(
+  new Blob([excelUrl], { type: 'application/octet-stream' })
+  );
+  link.setAttribute('download', 'student-list.xlsx');
+  document.body.appendChild(link);
+  link.click();
+}
